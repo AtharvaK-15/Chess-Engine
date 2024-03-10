@@ -1,1 +1,1 @@
-print(move.getChessNotation())
+print
