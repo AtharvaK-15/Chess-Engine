@@ -16,12 +16,20 @@ class GameState():
         ]
         self.whiteToMove = True
         self.moveLog = []
+        self.whiteKingLocation = (7, 4)
+        self.blackKingLocation = (0, 4)
+        self.checkMate = False
+        self.staleMate = False
 
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = "--"
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)
         self.whiteToMove = not self.whiteToMove
+        if move.pieceMoved == "wK":
+            self.whiteKingLocation = (move.endRow, move.endCol)
+        elif move.pieceMoved == "bK":
+            self.blackKingLocation = (move.endRow, move.endCol)
 
     def undoMove(self):
         if len(self.moveLog) != 0:
@@ -29,9 +37,51 @@ class GameState():
             self.board[move.startRow][move.startCol] = move.pieceMoved
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove
+            if move.pieceMoved == "wK":
+                self.whiteKingLocation = (move.startRow, move.startCol)
+            elif move.pieceMoved == "bK":
+                self.blackKingLocation = (move.startRow, move.startCol)
 
     def getValidMoves(self):
-        return self.getAllPossibleMoves()
+        # 1. Generate all possible moves
+        moves = self.getAllPossibleMoves()
+        # 2. For each move, make the move
+        for i in range(len(moves) - 1, -1, -1):
+            self.makeMove(moves[i])
+            # 3. Generate all possible moves for the other player
+            # 4. Check if any of the moves attack the king
+            opponentMoves = self.getAllPossibleMoves()
+            # 5. If any of the moves attack the king, then it is not a valid move
+            self.whiteToMove = not self.whiteToMove
+            if self.inCheck():
+                moves.remove(moves[i])
+            self.whiteToMove = not self.whiteToMove
+            self.undoMove()
+        if len(moves) == 0:
+            if self.inCheck():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+        else:
+            self.checkMate = False
+            self.staleMate = False
+        return moves
+
+    def inCheck(self):
+        if self.whiteToMove:
+            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+        else:
+            return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
+        
+    def squareUnderAttack(self, r, c):
+        self.whiteToMove = not self.whiteToMove
+        opponentMoves = self.getAllPossibleMoves()
+        self.whiteToMove = not self.whiteToMove
+        for move in opponentMoves:
+            if move.endRow == r and move.endCol == c:
+                return True
+        return False
+    
     
     def getAllPossibleMoves(self):
         moves = []
@@ -80,7 +130,8 @@ class GameState():
                     moves.append(Move((r, c), (r+1, c+1), self.board))
 
     def getRookMoves(self, r, c, moves):
-        directions = ((-1, 0), (0, -1), (1, 0), (0, 1))
+        # first represents the row, second represents the column
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1)) # up, left, down, right
         enemyColor = "b" if self.whiteToMove else "w"
         for d in directions:
             for i in range(1, 8):
@@ -99,6 +150,8 @@ class GameState():
                     break
 
     def getKnightMoves(self, r, c, moves):
+        # first represents the row, second represents the column
+        # 8 possible moves
         knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2),
                           (1, -2), (1, 2), (2, -1), (2, 1))
         allyColor = "w" if self.whiteToMove else "b"
@@ -166,13 +219,10 @@ class Move():
         self.pieceCaptured = board[self.endRow][self.endCol]
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
 
-        # print(self.moveID)
-
-        # overriding the equals method
     def __eq__(self, other):
         if isinstance(other, Move):
             return self.moveID == other.moveID
-        return False
+        return False 
 
     def getChessNotation(self):
         return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
