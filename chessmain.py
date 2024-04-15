@@ -12,9 +12,9 @@ Initialize a global dictionary of images. This will be called exactly once in th
 '''
 
 def loadImages():
-    pieces = ['wp', 'wR', 'wN', 'wB', 'wQ', 'wK', 'bp', 'bR', 'bN', 'bB', 'bQ', 'bK']
+    pieces = ['wP', 'wR', 'wN', 'wB', 'wQ', 'wK', 'bP', 'bR', 'bN', 'bB', 'bQ', 'bK']
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.scale(p.image.load("./images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
     # Note: we can access an image by saying 'IMAGES['wp']'
         
 '''
@@ -29,6 +29,9 @@ def main():
     gs = chessEngine.GameState()
     validMoves = gs.getValidMoves()
     moveMade = False # flag variable for when a move is made
+    print("White Side", end = " | ")
+    print("Black Side")
+    count = 0
 
     loadImages() # only do this once, before the while loop
     running = True
@@ -50,13 +53,20 @@ def main():
                     playerClicks.append(sqSelected) # append for both 1st and 2nd clicks
                 if len(playerClicks) == 2:
                     move = chessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    print(move.getChessNotation())
+                    
                     for i in range(len(validMoves)):
                         if move == validMoves[i]:
                             gs.makeMove(validMoves[i])
                             moveMade = True
                             sqSelected = ()
-                            playerClicks = []   
+                            playerClicks = []
+                            if(count%2==0):
+                                print(move.getChessNotation(), end=" \t   | ")
+                                count+=1
+                            else:
+                                print(move.getChessNotation())
+                                count+=1 
+
                     if not moveMade:
                         playerClicks = [sqSelected]     
                 

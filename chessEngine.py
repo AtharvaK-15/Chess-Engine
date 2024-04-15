@@ -6,12 +6,12 @@ class GameState():
         # "--" represents an empty space with no piece
         self.board = [
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
-            ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+            ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
+            ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]
         ]
         self.whiteToMove = True
@@ -90,7 +90,7 @@ class GameState():
                 turn = self.board[r][c][0]
                 piece = self.board[r][c][1]
                 if (self.whiteToMove and turn == "w") or (not self.whiteToMove and turn == "b"):
-                    if piece == "p":
+                    if piece == "P":
                         self.getPawnMoves(r, c, moves)
                     elif piece == "R":
                         self.getRookMoves(r, c, moves)
@@ -225,7 +225,14 @@ class Move():
         return False 
 
     def getChessNotation(self):
-        return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+        if(self.pieceMoved[1] != "P"):
+            if(self.pieceCaptured == "--"):
+                return self.pieceMoved[1] + self.getRankFile(self.endRow, self.endCol)
+            return self.pieceMoved[1] + "x" + self.getRankFile(self.endRow, self.endCol)
+        else:
+            if(self.pieceCaptured == "--"):
+                return self.getRankFile(self.endRow, self.endCol)
+            return self.getRankFile(self.startRow, self.startCol) + "x" + self.getRankFile(self.endRow, self.endCol)
     
     def getRankFile(self, r, c):
         return self.colsToFiles[c] + self.rowsToRanks[r]
