@@ -60,6 +60,7 @@ class GameState():
         if len(moves) == 0:
             if self.inCheck():
                 self.checkMate = True
+                
             else:
                 self.staleMate = True
         else:
@@ -236,3 +237,4 @@ class Move():
     
     def getRankFile(self, r, c):
         return self.colsToFiles[c] + self.rowsToRanks[r]
+    

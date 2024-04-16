@@ -1,5 +1,7 @@
 import pygame as p
 import chessEngine
+from docx import Document
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
@@ -29,9 +31,20 @@ def main():
     gs = chessEngine.GameState()
     validMoves = gs.getValidMoves()
     moveMade = False # flag variable for when a move is made
+    doc = Document()
     print("White Side", end = " | ")
     print("Black Side")
     count = 0
+    title = doc.add_heading("Notations", level=1)
+    title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    table = doc.add_table(rows=2, cols=2)
+    table.style = 'Table Grid'
+    cell = table.cell(0, 0)
+    cell.text = "White Side"
+    cell = table.cell(0, 1)
+    cell.text = "Black Side"
+    r=1
+    c=0
 
     loadImages() # only do this once, before the while loop
     running = True
@@ -39,6 +52,7 @@ def main():
     playerClicks = [] # keep track of player clicks (two tuples: [(6, 4), (4, 4)])
     while running:
         for e in p.event.get():
+            doc.save("notations.docx")
             if e.type == p.QUIT:
                 running = False
             elif e.type == p.MOUSEBUTTONDOWN:
@@ -60,12 +74,28 @@ def main():
                             moveMade = True
                             sqSelected = ()
                             playerClicks = []
-                            if(count%2==0):
-                                print(move.getChessNotation(), end=" \t   | ")
+                            table.add_row()
+                            cell = table.cell(r, c)
+                            check = 0                            
+                            result = gs.inCheck()
+                            if result:
+                                check = 1
+
+                            if(count%2 == 0):
+                                if(check == 1):
+                                        cell.text = str(count//2+1) + ". " + move.getChessNotation()+"+"
+                                else:
+                                        cell.text = str(count//2+1) + ". " + move.getChessNotation()
                                 count+=1
+                                c=1
                             else:
-                                print(move.getChessNotation())
-                                count+=1 
+                                if(check == 1):
+                                        cell.text = move.getChessNotation()+"+"
+                                else:
+                                    cell.text = move.getChessNotation()
+                                count+=1
+                                r+=1
+                                c=0
 
                     if not moveMade:
                         playerClicks = [sqSelected]     
@@ -74,7 +104,15 @@ def main():
                 if e.key == p.K_z: # undo when 'z' is pressed
                     gs.undoMove()
                     moveMade = True
-
+                    for paragraph in cell.paragraphs:
+                        paragraph.clear()
+                    if(count%2 == 0):
+                        r-=1
+                        c=1
+                        count-=1
+                    else:
+                        c=0
+                        count-=1
         if moveMade:
             validMoves = gs.getValidMoves()
             moveMade = False
