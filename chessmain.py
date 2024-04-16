@@ -32,8 +32,6 @@ def main():
     validMoves = gs.getValidMoves()
     moveMade = False # flag variable for when a move is made
     doc = Document()
-    print("White Side", end = " | ")
-    print("Black Side")
     count = 0
     title = doc.add_heading("Notations", level=1)
     title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
@@ -55,6 +53,7 @@ def main():
             doc.save("notations.docx")
             if e.type == p.QUIT:
                 running = False
+                print("Game Over!")
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos()
                 col = location[0]//SQ_SIZE
@@ -116,6 +115,15 @@ def main():
         if moveMade:
             validMoves = gs.getValidMoves()
             moveMade = False
+            if gs.checkMate:
+                if gs.whiteToMove:
+                    print("Game Over!\nBlack wins by Checkmate")
+                else:
+                    print("Game Over!\nWhite wins by Checkmate")
+                running = False
+            elif gs.staleMate:
+                print("Game Over!\nStalemate")
+                running = False
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
@@ -141,5 +149,5 @@ def drawPieces(screen, board):
 
 
 if __name__ == "__main__":
+    print("Welcome to Chess!")
     main()   
-        
