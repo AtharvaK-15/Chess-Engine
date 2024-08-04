@@ -312,6 +312,7 @@ class GameState:
                 else:
                     break  # off board
         # check for knight checks
+        # here -2 is the row and -1 is the column for the knight move
         knight_moves = ((-2, -1), (-2, 1), (-1, 2), (1, 2), (2, -1), (2, 1), (-1, -2), (1, -2))
         for move in knight_moves:
             end_row = start_row + move[0]
@@ -552,7 +553,6 @@ class GameState:
         if self.board[row][col - 1] == '--' and self.board[row][col - 2] == '--' and self.board[row][col - 3] == '--':
             if not self.squareUnderAttack(row, col - 1) and not self.squareUnderAttack(row, col - 2):
                 moves.append(Move((row, col), (row, col - 2), self.board, is_castle_move=True))
-
 
 class CastleRights:
     def __init__(self, wks, bks, wqs, bqs):
